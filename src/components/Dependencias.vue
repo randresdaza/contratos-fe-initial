@@ -1,6 +1,6 @@
 <template>
     <div class="information">
-        <h1 style="font-size: 1.5em;">Usuarios</h1>
+        <h1 style="font-size: 1.5em;">Dependencias</h1>
         <div>
             <input v-model="busqueda" type="text" class="buscar-input" placeholder="Buscar">
             <button @click="mostrarRegistro = true" class="registrar-btn">Nuevo</button>
@@ -10,22 +10,14 @@
                 <thead class="thead-dark">
                     <tr>
                         <th scope="col">ID</th>
-                        <th scope="col">Username</th>
                         <th scope="col">Nombre</th>
-                        <th scope="col">Email</th>
-                        <th scope="col">Estado</th>
-                        <th scope="col">Rol</th>
                         <th scope="col">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-for="user in usuariosFiltrados" :key="user.id">
                         <td>{{ user.id }}</td>
-                        <td>{{ user.username }}</td>
-                        <td>{{ user.name }}</td>
-                        <td>{{ user.email }}</td>
-                        <td>{{ user.estado }}</td>
-                        <td>{{ user.rol.nombre }}</td>
+                        <td>{{ user.nombre }}</td>
                         <td>
                             <button @click="editarUsuario(user)" class="editar-btn">Editar</button>
                             <button @click="confirmarEliminacion(user.id)" class="eliminar-btn">Eliminar</button>
@@ -95,7 +87,7 @@ export default {
             await this.verifyToken();
             let token = localStorage.getItem('token_access');
             axios
-                .get('http://127.0.0.1:8000/users/', {
+                .get('http://127.0.0.1:8000/dependencias/', {
                     headers: { Authorization: `Bearer ${token}` },
                     params: { search: this.busqueda }
                 })
@@ -148,7 +140,7 @@ export default {
         guardarUsuario: function (usuarioActualizado, id) {
             console.log("este", usuarioActualizado)
             axios
-                .put(`http://127.0.0.1:8000/users/${id}/`, usuarioActualizado, {
+                .put(`http://127.0.0.1:8000/dependencias/${id}/`, usuarioActualizado, {
                     headers: { Authorization: `Bearer ${localStorage.getItem('token_access')}` },
                 })
                 .then((response) => {
@@ -168,7 +160,7 @@ export default {
         },
         eliminarUsuario: function (idUsuario) {
             axios
-                .delete(`http://127.0.0.1:8000/users/${idUsuario}/`, {
+                .delete(`http://127.0.0.1:8000/dependencias/${idUsuario}/`, {
                     headers: { Authorization: `Bearer ${localStorage.getItem('token_access')}` },
                 })
                 .then((response) => {
@@ -190,7 +182,7 @@ export default {
         },
         registrarUsuario: function (nuevoUsuario) {
             axios
-                .post('http://127.0.0.1:8000/userCreate/', nuevoUsuario, {
+                .post('http://127.0.0.1:8000/dependencias/', nuevoUsuario, {
                     headers: { Authorization: `Bearer ${localStorage.getItem('token_access')}` },
                 })
                 .then((response) => {
@@ -203,7 +195,7 @@ export default {
             this.mostrarRegistro = false;
         },
         cumpleCriterioBusqueda: function (usuario, busqueda) {
-            const searchFields = ['id', 'username', 'name', 'email', 'estado', 'rol'];
+            const searchFields = ['id', 'nombre'];
             for (let field of searchFields) {
                 if (usuario[field] && usuario[field].toString().toLowerCase().includes(busqueda.toLowerCase())) {
                     return true;
@@ -219,11 +211,7 @@ export default {
                 return this.ListaUsuarios.filter(user => {
                     return (
                         user.id.toString().includes(busquedaMinuscula) ||
-                        user.username.toLowerCase().includes(busquedaMinuscula) ||
-                        user.name.toLowerCase().includes(busquedaMinuscula) ||
-                        user.email.toLowerCase().includes(busquedaMinuscula) ||
-                        user.estado.toLowerCase().includes(busquedaMinuscula) ||
-                        user.rol.nombre.toLowerCase().includes(busquedaMinuscula)
+                        user.nombre.toLowerCase().includes(busquedaMinuscula)
                     );
                 })
             } else {
@@ -250,7 +238,7 @@ export default {
     align-items: center;
     display: flex;
     flex-direction: column;
-    position: relative; 
+    position: relative;
 }
 
 .registrar-btn {
@@ -287,7 +275,7 @@ export default {
     table-layout: fixed;
     border-collapse: collapse;
     white-space: nowrap;
-    max-width: 1400px;
+    max-width: 1000px;
     margin: 0 auto;
 }
 
@@ -373,7 +361,7 @@ export default {
     justify-content: flex-end;
     overflow-x: auto;
     white-space: nowrap;
-    margin-right: 65em;
+    margin-right: 35em;
     margin-bottom: 3em;
 }
 

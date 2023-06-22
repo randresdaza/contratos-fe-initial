@@ -3,6 +3,9 @@
     <div class="header">
       <title>Iniciar Sesion</title>
       <h1>Gestión de Contrataciones</h1>
+      <div class="greetings">
+        <label v-if="is_auth">Usuario: {{ username }}</label>
+      </div>
       <nav class="navbar">
         <button v-if="is_auth" v-on:click="loadHome" class="btn btn-primary">
           Inicio
@@ -10,16 +13,19 @@
         <button v-if="is_auth" v-on:click="loadUsers" class="btn btn-primary">
           Usuarios
         </button>
+        <button v-if="is_auth" v-on:click="loadRoles" class="btn btn-primary">
+          Roles
+        </button>
         <button v-if="is_auth" v-on:click="loadContratos" class="btn btn-primary">
           Contratos
         </button>
-        <button v-if="is_auth" v-on:click="loadUsers" class="btn btn-primary">
+        <button v-if="is_auth" v-on:click="loadDependencias" class="btn btn-primary">
           Dependencias
         </button>
-        <button v-if="is_auth" v-on:click="loadUsers" class="btn btn-primary">
+        <button v-if="is_auth" v-on:click="loadSeries" class="btn btn-primary">
           Series
         </button>
-        <button v-if="is_auth" v-on:click="loadUsers" class="btn btn-primary">
+        <button v-if="is_auth" v-on:click="loadSubSeries" class="btn btn-primary">
           Subseries
         </button>
         <button v-if="is_auth" v-on:click="loadUsers" class="btn btn-primary">
@@ -51,7 +57,8 @@ export default {
   name: 'App',
   data: function () {
     return {
-      is_auth: false
+      is_auth: false,
+      username: localStorage.getItem("username")
     }
   },
   methods: {
@@ -74,8 +81,20 @@ export default {
     loadUsers: function () {
       this.$router.push({ name: 'usuarios' })
     },
+    loadRoles: function () {
+      this.$router.push({ name: 'roles' })
+    },
     loadContratos: function () {
       this.$router.push({ name: 'contratos' })
+    },
+    loadDependencias: function () {
+      this.$router.push({ name: 'dependencias' })
+    },
+    loadSeries: function () {
+      this.$router.push({ name: 'series' })
+    },
+    loadSubSeries: function () {
+      this.$router.push({ name: 'subSeries' })
     },
     logOut: function () {
       localStorage.clear();
@@ -107,6 +126,15 @@ body {
   height: 100%;
   margin: 0;
   padding: 0;
+}
+
+.greetings {
+  position: absolute;
+  flex-direction: column;
+  display: flex;
+  justify-content: center;
+  font-size: 20px;
+
 }
 
 body {
@@ -165,6 +193,8 @@ body {
   border-color: #000000;
   border-radius: 5px;
   padding: 10px 20px;
+  right: 10px;
+  position: absolute;
 }
 
 .btn-danger:hover {

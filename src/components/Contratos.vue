@@ -1,34 +1,30 @@
 <template>
     <div class="information">
-        <h1 style="font-size: 1.5em;">Información de los Contratos</h1>
+        <h1 style="font-size: 1.5em;">Contratos</h1>
         <div>
             <input v-model="busqueda" type="text" class="buscar-input" placeholder="Buscar">
-            <button @click="mostrarRegistro = true" class="registrar-btn">Registrar Contrato</button>
+            <button @click="mostrarRegistro = true" class="registrar-btn">Nuevo</button>
         </div>
         <div class="table-container">
             <table class="table">
                 <thead class="thead-dark">
                     <tr>
                         <th scope="col">ID</th>
-                        <th scope="col">Username</th>
-                        <th scope="col">Nombre</th>
-                        <th scope="col">Email</th>
-                        <th scope="col">Estado</th>
-                        <th scope="col">Rol</th>
+                        <th scope="col">Nombre del Archivo</th>
+                        <th scope="col">Fecha</th>
+                        <th scope="col">Usuario</th>
                         <th scope="col">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="user in usuariosFiltrados" :key="user.id">
-                        <td>{{ user.id }}</td>
-                        <td>{{ user.username }}</td>
-                        <td>{{ user.name }}</td>
-                        <td>{{ user.email }}</td>
-                        <td>{{ user.estado }}</td>
-                        <td>{{ user.rol }}</td>
+                    <tr v-for="contrato in contratosFiltrados" :key="contrato.id">
+                        <td>{{ contrato.id }}</td>
+                        <td>{{ contrato.nombreArchivo }}</td>
+                        <td>{{ contrato.fecha }}</td>
+                        <td>{{ contrato.usuario }}</td>
                         <td>
-                            <button @click="editarUsuario(user)" class="editar-btn">Editar</button>
-                            <button @click="confirmarEliminacion(user.id)" class="eliminar-btn">Eliminar</button>
+                            <button @click="verContrato(contrato)" class="ver-btn">Ver</button>
+                            <button @click="eliminarContrato(contrato.id)" class="eliminar-btn">Eliminar</button>
                         </td>
                     </tr>
                 </tbody>
@@ -43,208 +39,240 @@
                 </button>
             </div>
             <div class="total-registros">
-                <span v-if="busqueda === ''">Total registros: {{ totalRegistros }} </span>
-                <span v-else>Total registros: {{ usuariosFiltrados.length }}</span>
+                <span v-if="busqueda === ''">Total registros: {{ 0 }}</span>
+                <span v-else>Total registros: {{ contratosFiltrados.length }}</span>
             </div>
         </div>
-        <editar-usuario-modal :usuario-seleccionado="usuarioSeleccionado" :show-modal="showModal"
-            @guardar-usuario="guardarUsuario" @cancelar-edicion="cancelarEdicion"></editar-usuario-modal>
-        <registrar-usuario-modal v-if="mostrarRegistro" :show-modal="mostrarRegistro" @registrar-usuario="registrarUsuario"
-            @cancelar-registro="cancelarRegistro"></registrar-usuario-modal>
+        <ver-contrato-modal v-if="mostrarRegistro" :show-modal="mostrarRegistro" @registrar-contrato="registrarContrato"
+            @cancelar-registro="cancelarRegistro"></ver-contrato-modal>
     </div>
 </template>
-
+  
 <script>
 import axios from 'axios';
-import jwt_decode from 'jwt-decode';
-import EditarUsuarioModal from './EditarUsuarioModal.vue';
-import RegistrarUsuarioModal from './RegistrarUsuarioModal.vue';
+import VerContratoModal from './VerContratoModal.vue';
 
 export default {
-    name: 'Account',
+    name: 'Contratos',
     components: {
-        EditarUsuarioModal,
-        RegistrarUsuarioModal,
+        VerContratoModal,
     },
     data() {
         return {
-            ListaUsuarios: [],
-            loaded: true,
-            usuarioSeleccionado: null,
-            showModal: false,
-            mostrarRegistro: false,
-            sortOrder: 'asc',
+            contratos: [],
+            contratosFiltrados: [],
             busqueda: '',
             registrosPorPagina: 5,
-            paginaActual: 5,
             opcionesPagina: [5, 10, 25],
+            contratoSeleccionado: null,
+            showModal: false,
+            mostrarRegistro: false,
         };
+    },
+    mounted() {
+        this.getData();
+    },
+    computed: {
+        totalRegistros() {
+            return this.contratos.length;
+        },
     },
     methods: {
         cambiarRegistrosPorPagina(opcion) {
             this.registrosPorPagina = opcion;
         },
-        getData: async function () {
-            if (
-                localStorage.getItem('token_access') === null ||
-                localStorage.getItem('token_refresh') === null
-            ) {
-                this.$emit('logOut');
-                return;
-            }
-            await this.verifyToken();
-            let token = localStorage.getItem('token_access');
-            let userId = jwt_decode(token).user_id.toString();
+        getData() {
             axios
-                .get('http://127.0.0.1:8000/users/', {
-                    headers: { Authorization: `Bearer ${token}` },
-                    params: { search: this.busqueda }
-                })
-                .then((result) => {
-                    this.ListaUsuarios = result.data;
-                    this.loaded = false;
-                    this.ordenarTabla();
-                    this.filtrarUsuarios();
-                    this.totalRegistros = this.ListaUsuarios.length;;
+                .get('')
+                .then((response) => {
+                    this.contratos = response.data;
                 })
                 .catch((error) => {
-                    this.$emit('logOut', error);
+                    console.error(error);
                 });
         },
-        verifyToken: function () {
-            return axios
-                .post(
-                    'http://127.0.0.1:8000/refresh/',
-                    { refresh: localStorage.getItem('token_refresh') },
-                    { headers: { 'Content-Type': 'application/json' } }
-                )
-                .then((result) => {
-                    localStorage.setItem('token_access', result.data.access);
-                })
-                .catch(() => {
-                    this.$emit('logOut');
-                });
-        },
-        ordenarTabla: function () {
-            if (this.ListaUsuarios) {
-                this.ListaUsuarios.sort((a, b) => {
-                    if (this.sortOrder === 'asc') {
-                        return a.id - b.id;
-                    } else {
-                        return b.id - a.id;
-                    }
-                });
-            }
-        },
-        editarUsuario: function (usuario) {
-            this.usuarioSeleccionado = { ...usuario };
+        verContrato(contrato) {
+            this.contratoSeleccionado = contrato;
             this.showModal = true;
         },
-        toggleOrden: function () {
-            this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
-            this.ordenarTabla();
-            this.filtrarUsuarios();
-        },
-        guardarUsuario: function (usuarioActualizado) {
-            if (usuarioActualizado.password === usuarioActualizado.originalPassword) {
-                delete usuarioActualizado.password;
-            } else {
-                usuarioActualizado.password = make_password(usuarioActualizado.password);
-            }
-            axios
-                .put(`http://127.0.0.1:8000/users/${usuarioActualizado.id}/`, usuarioActualizado, {
-                    headers: { Authorization: `Bearer ${localStorage.getItem('token_access')}` },
-                })
-                .then((response) => {
-                    alert('Usuario actualizado exitosamente.');
-                    this.getData();
-                    this.ordenarTabla();
-                })
-                .catch((error) => {
-                    alert('Error al actualizar el usuario.');
-                });
-            this.showModal = false;
-        },
-        confirmarEliminacion: function (idUsuario) {
-            if (confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
-                this.eliminarUsuario(idUsuario);
-            }
-        },
-        eliminarUsuario: function (idUsuario) {
-            axios
-                .delete(`http://127.0.0.1:8000/users/${idUsuario}/`, {
-                    headers: { Authorization: `Bearer ${localStorage.getItem('token_access')}` },
-                })
-                .then((response) => {
-                    alert('Usuario eliminado exitosamente.');
-                    this.getData();
-                })
-                .catch((error) => {
-                    alert('Error al eliminar el usuario.');
-                });
-        },
-        cancelarEdicion: function () {
-            this.showModal = false;
-        },
-        mostrarRegistroUsuario: function () {
-            this.mostrarRegistro = true;
-        },
-        cancelarRegistro: function () {
+        cancelarRegistro() {
             this.mostrarRegistro = false;
         },
-        registrarUsuario: function (nuevoUsuario) {
+        eliminarContrato(contratoId) {
             axios
-                .post('http://127.0.0.1:8000/userCreate/', nuevoUsuario, {
-                    headers: { Authorization: `Bearer ${localStorage.getItem('token_access')}` },
-                })
+                .delete(`http://localhost:8000/contratos/${contratoId}`)
                 .then((response) => {
-                    alert('Usuario registrado exitosamente.');
                     this.getData();
                 })
                 .catch((error) => {
-                    alert('Error al registrar el usuario.');
+                    console.error(error);
                 });
-            this.mostrarRegistro = false;
         },
-        cumpleCriterioBusqueda: function (usuario, busqueda) {
-            const searchFields = ['id', 'username', 'name', 'email', 'estado', 'rol'];
-            for (let field of searchFields) {
-                if (usuario[field] && usuario[field].toString().toLowerCase().includes(busqueda.toLowerCase())) {
-                    return true;
-                }
-            }
-            return false;
-        },
-    },
-    computed: {
-        usuariosFiltrados: function () {
-            if (this.busqueda) {
-                const busquedaMinuscula = this.busqueda.toLowerCase();
-                return this.ListaUsuarios.filter(user => {
-                    return (
-                        user.id.toString().includes(busquedaMinuscula) ||
-                        user.username.toLowerCase().includes(busquedaMinuscula) ||
-                        user.name.toLowerCase().includes(busquedaMinuscula) ||
-                        user.email.toLowerCase().includes(busquedaMinuscula) ||
-                        user.estado.toLowerCase().includes(busquedaMinuscula) ||
-                        user.rol.toLowerCase().includes(busquedaMinuscula)
-                    );
+        handleFileUpload(event) {
+            const file = event.target.files[0];
+            const formData = new FormData();
+            formData.append('archivo', file);
+
+            axios
+                .post('http://localhost:8000/contratos/', formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
                 })
-            } else {
-                return this.ListaUsuarios.slice(0, this.registrosPorPagina);
-            }
-        },
-        totalRegistros() {
-            return this.ListaUsuarios.length;
+                .then((response) => {
+                    this.getData();
+                })
+                .catch((error) => {
+                    console.error(error);
+                });
         },
     },
-    mounted() {
-        this.getData();
+    watch: {
+        busqueda(nuevoValor) {
+            this.contratosFiltrados = this.contratos.filter((contrato) => {
+                return contrato.nombreArchivo.toLowerCase().includes(nuevoValor.toLowerCase());
+            });
+        },
     },
 };
 </script>
 
 <style scoped>
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.title {
+    font-size: 1.5em;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+}
+
+.label {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.button {
+    padding: 10px 20px;
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.button:hover {
+    background-color: #45a049;
+}
+
+.table {
+    margin-top: 20px;
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table th,
+.table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.table th {
+    background-color: #4caf50;
+    color: white;
+}
+
+.table tr:hover {
+    background-color: #f5f5f5;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.pagination button {
+    margin: 0 5px;
+    padding: 5px 10px;
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.pagination button.active {
+    background-color: #45a049;
+}
+
+.pagination button:hover {
+    background-color: #45a049;
+}
+
+.total-registros {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    overflow-x: auto;
+    white-space: nowrap;
+    margin-right: 1em;
+    margin-bottom: 4em;
+    font-weight: bold;
+}
+
+.eliminar-btn {
+    padding: 5px 10px;
+    background-color: #f44336;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.eliminar-btn:hover {
+    background-color: #e53935;
+}
+
+.alert {
+    padding: 10px;
+    background-color: #f44336;
+    color: white;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.alert.success {
+    background-color: #4caf50;
+}
+
+.alert.warning {
+    background-color: #ff9800;
+}
+
+.alert.info {
+    background-color: #2196f3;
+}
+
+.alert.error {
+    background-color: #f44336;
+}
+
 .information {
     padding: -10em;
     margin: 0em;
@@ -266,6 +294,7 @@ export default {
     font-weight: bold;
     border-radius: 4px;
     transition: opacity 0.3s ease;
+    background-color: #555b60;
 }
 
 .buscar-input {
@@ -448,3 +477,5 @@ export default {
     box-shadow: 0 0 4px #2196f3;
 }
 </style>
+
+

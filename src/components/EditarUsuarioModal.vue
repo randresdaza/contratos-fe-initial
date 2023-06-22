@@ -7,10 +7,6 @@
                     <label for="username">Username:</label>
                     <input type="text" id="username" v-model="usuarioSeleccionado.username" required>
                 </div>
-                <div v-if="usuarioSeleccionado.passwordChanged">
-                    <label for="password">Contraseña:</label>
-                    <input type="password" id="password" v-model="usuarioSeleccionado.password" />
-                </div>
                 <div class="form-group">
                     <label for="name">Nombre:</label>
                     <input type="text" id="name" v-model="usuarioSeleccionado.name" required>
@@ -28,10 +24,8 @@
                 </div>
                 <div class="form-group">
                     <label for="rol">Rol:</label>
-                    <select id="rol" v-model="usuarioSeleccionado.rol" required>
-                        <option value="Administrador">Administrador</option>
-                        <option value="Supervisor">Supervisor</option>
-                        <option value="Digitador">Digitador</option>
+                    <select id="rol" v-model="usuarioSeleccionado.rol.id" required>
+                        <option v-for="rol in roles" :key="rol.id" :value="rol.id">{{ rol.nombre }}</option>
                     </select>
                 </div>
                 <div class="modal-buttons">
@@ -55,9 +49,38 @@ export default {
             required: true,
         },
     },
+    data() {
+        return {
+            nuevoUsuario: {
+                username: null,
+                name: null,
+                email: null,
+                estado: null,
+                rol: null,
+            },
+            roles: [],
+        };
+    },
+    mounted() {
+        let token = localStorage.getItem('token_access');
+        axios.get('http://127.0.0.1:8000/roles/', {
+            headers: { Authorization: `Bearer ${token}` },
+        })
+            .then(response => {
+                this.roles = response.data;
+            })
+            .catch(error => {
+                console.error(error);
+            });
+    },
     methods: {
         guardarUsuario: function () {
-            this.$emit('guardarUsuario', this.usuarioSeleccionado);
+            this.nuevoUsuario.username = this.usuarioSeleccionado.username;
+            this.nuevoUsuario.name = this.usuarioSeleccionado.name;
+            this.nuevoUsuario.email = this.usuarioSeleccionado.email;
+            this.nuevoUsuario.estado = this.usuarioSeleccionado.estado;
+            this.nuevoUsuario.rol = this.usuarioSeleccionado.rol.id;
+            this.$emit('guardarUsuario', this.nuevoUsuario, this.usuarioSeleccionado.id);
         },
         cancelarEdicion: function () {
             this.$emit('cancelarEdicion');
@@ -116,6 +139,7 @@ export default {
 
 button {
     padding: 5px 10px;
+    margin: 10px;
     border-radius: 4px;
     background-color: #007bff;
     color: #fff;

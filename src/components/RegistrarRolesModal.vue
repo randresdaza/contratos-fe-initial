@@ -1,29 +1,11 @@
 <template>
     <div class="modal" v-if="showModal">
         <div class="modal-content">
-            <h2>Nuevo Usuario</h2>
+            <h2>Nuevo Rol</h2>
             <form @submit.prevent="registrarUsuario">
                 <div class="form-group">
-                    <label for="username">Username:</label>
-                    <input type="text" id="username" v-model="nuevoUsuario.username" required>
-                </div>
-                <div class="form-group">
-                    <label for="password">Password:</label>
-                    <input type="password" id="password" v-model="nuevoUsuario.password" required>
-                </div>
-                <div class="form-group">
-                    <label for="name">Nombre:</label>
-                    <input type="text" id="name" v-model="nuevoUsuario.name" required>
-                </div>
-                <div class="form-group">
-                    <label for="email">Email:</label>
-                    <input type="email" id="email" v-model="nuevoUsuario.email" required>
-                </div>
-                <div class="form-group">
-                    <label for="rol">Rol:</label>
-                    <select id="rol" v-model="nuevoUsuario.rol" required>
-                        <option v-for="rol in roles" :key="rol.id" :value="rol.id">{{ rol.nombre }}</option>
-                    </select>
+                    <label for="username">Nombre:</label>
+                    <input type="text" id="username" v-model="nuevoUsuario.nombre" required>
                 </div>
                 <div class="modal-buttons">
                     <button type="submit">Guardar</button>

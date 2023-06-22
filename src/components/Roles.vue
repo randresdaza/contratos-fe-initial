@@ -1,6 +1,6 @@
 <template>
     <div class="information">
-        <h1 style="font-size: 1.5em;">Usuarios</h1>
+        <h1 style="font-size: 1.5em;">Roles</h1>
         <div>
             <input v-model="busqueda" type="text" class="buscar-input" placeholder="Buscar">
             <button @click="mostrarRegistro = true" class="registrar-btn">Nuevo</button>
@@ -10,22 +10,14 @@
                 <thead class="thead-dark">
                     <tr>
                         <th scope="col">ID</th>
-                        <th scope="col">Username</th>
                         <th scope="col">Nombre</th>
-                        <th scope="col">Email</th>
-                        <th scope="col">Estado</th>
-                        <th scope="col">Rol</th>
                         <th scope="col">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-for="user in usuariosFiltrados" :key="user.id">
                         <td>{{ user.id }}</td>
-                        <td>{{ user.username }}</td>
-                        <td>{{ user.name }}</td>
-                        <td>{{ user.email }}</td>
-                        <td>{{ user.estado }}</td>
-                        <td>{{ user.rol.nombre }}</td>
+                        <td>{{ user.nombre }}</td>
                         <td>
                             <button @click="editarUsuario(user)" class="editar-btn">Editar</button>
                             <button @click="confirmarEliminacion(user.id)" class="eliminar-btn">Eliminar</button>
@@ -47,24 +39,26 @@
                 <span v-else>Total registros: {{ usuariosFiltrados.length }}</span>
             </div>
         </div>
-        <editar-usuario-modal :usuario-seleccionado="usuarioSeleccionado" :show-modal="showModal"
-            @guardar-usuario="guardarUsuario" @cancelar-edicion="cancelarEdicion"></editar-usuario-modal>
-        <registrar-usuario-modal v-if="mostrarRegistro" :show-modal="mostrarRegistro" @registrar-usuario="registrarUsuario"
-            @cancelar-registro="cancelarRegistro"></registrar-usuario-modal>
+        <EditarRolesModal :usuario-seleccionado="usuarioSeleccionado" :show-modal="showModal"
+            @guardar-usuario="guardarUsuario" @cancelar-edicion="cancelarEdicion"></EditarRolesModal>
+        <RegistrarRolesModal v-if="mostrarRegistroUsuario" :show-modal="mostrarRegistro" @registrar-usuario="registrarUsuario"
+            @cancelar-registro="cancelarRegistro"></RegistrarRolesModal>
+
+
     </div>
 </template>
 
 <script>
 import axios from 'axios';
 import jwt_decode from 'jwt-decode';
-import EditarUsuarioModal from './EditarUsuarioModal.vue';
-import RegistrarUsuarioModal from './RegistrarUsuarioModal.vue';
+import EditarRolesModal from './EditarRolesModal.vue';
+import RegistrarRolesModal from './RegistrarRolesModal.vue';
 
 export default {
-    name: 'Usuarios',
+    name: 'Roles',
     components: {
-        EditarUsuarioModal,
-        RegistrarUsuarioModal,
+        EditarRolesModal,
+        RegistrarRolesModal,
     },
     data() {
         return {
@@ -95,7 +89,7 @@ export default {
             await this.verifyToken();
             let token = localStorage.getItem('token_access');
             axios
-                .get('http://127.0.0.1:8000/users/', {
+                .get('http://127.0.0.1:8000/roles/', {
                     headers: { Authorization: `Bearer ${token}` },
                     params: { search: this.busqueda }
                 })
@@ -145,38 +139,38 @@ export default {
             this.ordenarTabla();
             this.filtrarUsuarios();
         },
-        guardarUsuario: function (usuarioActualizado, id) {
+        guardarUsuario: function (usuarioActualizado) {
             console.log("este", usuarioActualizado)
             axios
-                .put(`http://127.0.0.1:8000/users/${id}/`, usuarioActualizado, {
+                .put(`http://127.0.0.1:8000/roles/${usuarioActualizado.id}/`,usuarioActualizado, {
                     headers: { Authorization: `Bearer ${localStorage.getItem('token_access')}` },
                 })
                 .then((response) => {
-                    alert('Usuario actualizado exitosamente.');
+                    alert('Rol actualizado exitosamente.');
                     this.getData();
                     this.ordenarTabla();
                 })
                 .catch((error) => {
-                    alert('Error al actualizar el usuario.');
+                    alert('Error al actualizar el Rol.');
                 });
             this.showModal = false;
         },
         confirmarEliminacion: function (idUsuario) {
-            if (confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
+            if (confirm('¿Estás seguro de que deseas eliminar este Rol?')) {
                 this.eliminarUsuario(idUsuario);
             }
         },
         eliminarUsuario: function (idUsuario) {
             axios
-                .delete(`http://127.0.0.1:8000/users/${idUsuario}/`, {
+                .delete(`http://127.0.0.1:8000/roles/${idUsuario}/`, {
                     headers: { Authorization: `Bearer ${localStorage.getItem('token_access')}` },
                 })
                 .then((response) => {
-                    alert('Usuario eliminado exitosamente.');
+                    alert('Rol eliminado exitosamente.');
                     this.getData();
                 })
                 .catch((error) => {
-                    alert('Error al eliminar el usuario.');
+                    alert('Error al eliminar el Rol.');
                 });
         },
         cancelarEdicion: function () {
@@ -190,20 +184,20 @@ export default {
         },
         registrarUsuario: function (nuevoUsuario) {
             axios
-                .post('http://127.0.0.1:8000/userCreate/', nuevoUsuario, {
+                .post('http://127.0.0.1:8000/roles/', nuevoUsuario, {
                     headers: { Authorization: `Bearer ${localStorage.getItem('token_access')}` },
                 })
                 .then((response) => {
-                    alert('Usuario registrado exitosamente.');
+                    alert('Rol registrado exitosamente.');
                     this.getData();
                 })
                 .catch((error) => {
-                    alert('Error al registrar el usuario.');
+                    alert('El Rol ingresado ya existe.');
                 });
             this.mostrarRegistro = false;
         },
         cumpleCriterioBusqueda: function (usuario, busqueda) {
-            const searchFields = ['id', 'username', 'name', 'email', 'estado', 'rol'];
+            const searchFields = ['id', 'nombre'];
             for (let field of searchFields) {
                 if (usuario[field] && usuario[field].toString().toLowerCase().includes(busqueda.toLowerCase())) {
                     return true;
@@ -219,11 +213,7 @@ export default {
                 return this.ListaUsuarios.filter(user => {
                     return (
                         user.id.toString().includes(busquedaMinuscula) ||
-                        user.username.toLowerCase().includes(busquedaMinuscula) ||
-                        user.name.toLowerCase().includes(busquedaMinuscula) ||
-                        user.email.toLowerCase().includes(busquedaMinuscula) ||
-                        user.estado.toLowerCase().includes(busquedaMinuscula) ||
-                        user.rol.nombre.toLowerCase().includes(busquedaMinuscula)
+                        user.nombre.toLowerCase().includes(busquedaMinuscula)
                     );
                 })
             } else {
@@ -250,7 +240,7 @@ export default {
     align-items: center;
     display: flex;
     flex-direction: column;
-    position: relative; 
+    position: relative;
 }
 
 .registrar-btn {
@@ -287,7 +277,7 @@ export default {
     table-layout: fixed;
     border-collapse: collapse;
     white-space: nowrap;
-    max-width: 1400px;
+    max-width: 1000px;
     margin: 0 auto;
 }
 
@@ -373,7 +363,7 @@ export default {
     justify-content: flex-end;
     overflow-x: auto;
     white-space: nowrap;
-    margin-right: 65em;
+    margin-right: 35em;
     margin-bottom: 3em;
 }
 
