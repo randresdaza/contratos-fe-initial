@@ -18,13 +18,13 @@ export default {
 <style>
 .greetings {
     top: 0;
-    right: 0;
+    left: 0;
     position: absolute;
     display: flex;
     flex-direction: column;
     display: flex;
     justify-content: center;
-    padding: 10px 10px;
+    padding: 22px 10px;
 }
 
 .imagen {

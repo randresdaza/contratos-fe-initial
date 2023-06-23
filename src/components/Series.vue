@@ -39,24 +39,24 @@
                 <span v-else>Total registros: {{ usuariosFiltrados.length }}</span>
             </div>
         </div>
-        <editar-usuario-modal :usuario-seleccionado="usuarioSeleccionado" :show-modal="showModal"
-            @guardar-usuario="guardarUsuario" @cancelar-edicion="cancelarEdicion"></editar-usuario-modal>
-        <registrar-usuario-modal v-if="mostrarRegistro" :show-modal="mostrarRegistro" @registrar-usuario="registrarUsuario"
-            @cancelar-registro="cancelarRegistro"></registrar-usuario-modal>
+        <EditarRol :usuario-seleccionado="usuarioSeleccionado" :show-modal="showModal"
+            @guardar-usuario="guardarUsuario" @cancelar-edicion="cancelarEdicion"></EditarRol>
+        <registrar-usuario v-if="mostrarRegistro" :show-modal="mostrarRegistro" @registrar-usuario="registrarUsuario"
+            @cancelar-registro="cancelarRegistro"></registrar-usuario>
     </div>
 </template>
 
 <script>
 import axios from 'axios';
 import jwt_decode from 'jwt-decode';
-import EditarUsuarioModal from './EditarUsuarioModal.vue';
-import RegistrarUsuarioModal from './RegistrarUsuarioModal.vue';
+import EditarRol from './EditarRol.vue';
+import RegistrarRol from './RegistrarRol.vue';
 
 export default {
-    name: 'Series',
+    name: 'Roles',
     components: {
-        EditarUsuarioModal,
-        RegistrarUsuarioModal,
+        EditarRol,
+        RegistrarRol,
     },
     data() {
         return {
@@ -137,38 +137,38 @@ export default {
             this.ordenarTabla();
             this.filtrarUsuarios();
         },
-        guardarUsuario: function (usuarioActualizado, id) {
+        guardarUsuario: function (usuarioActualizado) {
             console.log("este", usuarioActualizado)
             axios
-                .put(`http://127.0.0.1:8000/series/${id}/`, usuarioActualizado, {
+                .put(`http://127.0.0.1:8000/series/${usuarioActualizado.id}/`,usuarioActualizado, {
                     headers: { Authorization: `Bearer ${localStorage.getItem('token_access')}` },
                 })
                 .then((response) => {
-                    alert('Usuario actualizado exitosamente.');
+                    alert('Rol actualizado exitosamente.');
                     this.getData();
                     this.ordenarTabla();
                 })
                 .catch((error) => {
-                    alert('Error al actualizar el usuario.');
+                    alert('Error al actualizar el Rol.');
                 });
             this.showModal = false;
         },
         confirmarEliminacion: function (idUsuario) {
-            if (confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
+            if (confirm('¿Estás seguro de que deseas eliminar este Rol?')) {
                 this.eliminarUsuario(idUsuario);
             }
         },
         eliminarUsuario: function (idUsuario) {
             axios
-                .delete(`http://127.0.0.1:8000/series/${idUsuario}/`, {
+                .delete(`http://127.0.0.1:8000/roles/${idUsuario}/`, {
                     headers: { Authorization: `Bearer ${localStorage.getItem('token_access')}` },
                 })
                 .then((response) => {
-                    alert('Usuario eliminado exitosamente.');
+                    alert('Rol eliminado exitosamente.');
                     this.getData();
                 })
                 .catch((error) => {
-                    alert('Error al eliminar el usuario.');
+                    alert('Error al eliminar el Rol.');
                 });
         },
         cancelarEdicion: function () {
@@ -182,15 +182,15 @@ export default {
         },
         registrarUsuario: function (nuevoUsuario) {
             axios
-                .post('http://127.0.0.1:8000/series/', nuevoUsuario, {
+                .post('http://127.0.0.1:8000/roles/', nuevoUsuario, {
                     headers: { Authorization: `Bearer ${localStorage.getItem('token_access')}` },
                 })
                 .then((response) => {
-                    alert('Usuario registrado exitosamente.');
+                    alert('Rol registrado exitosamente.');
                     this.getData();
                 })
                 .catch((error) => {
-                    alert('Error al registrar el usuario.');
+                    alert('El Rol ingresado ya existe.');
                 });
             this.mostrarRegistro = false;
         },

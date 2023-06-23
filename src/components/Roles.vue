@@ -39,10 +39,10 @@
                 <span v-else>Total registros: {{ usuariosFiltrados.length }}</span>
             </div>
         </div>
-        <EditarRolesModal :usuario-seleccionado="usuarioSeleccionado" :show-modal="showModal"
-            @guardar-usuario="guardarUsuario" @cancelar-edicion="cancelarEdicion"></EditarRolesModal>
-        <RegistrarRolesModal v-if="mostrarRegistroUsuario" :show-modal="mostrarRegistro" @registrar-usuario="registrarUsuario"
-            @cancelar-registro="cancelarRegistro"></RegistrarRolesModal>
+        <EditarRol :usuario-seleccionado="usuarioSeleccionado" :show-modal="showModal"
+            @guardar-usuario="guardarUsuario" @cancelar-edicion="cancelarEdicion"></EditarRol>
+        <RegistrarRol v-if="mostrarRegistroUsuario" :show-modal="mostrarRegistro" @registrar-usuario="registrarUsuario"
+            @cancelar-registro="cancelarRegistro"></RegistrarRol>
 
 
     </div>
@@ -51,14 +51,14 @@
 <script>
 import axios from 'axios';
 import jwt_decode from 'jwt-decode';
-import EditarRolesModal from './EditarRolesModal.vue';
-import RegistrarRolesModal from './RegistrarRolesModal.vue';
+import EditarRol from './EditarRol.vue';
+import RegistrarRol from './RegistrarRol.vue';
 
 export default {
     name: 'Roles',
     components: {
-        EditarRolesModal,
-        RegistrarRolesModal,
+        EditarRol,
+        RegistrarRol,
     },
     data() {
         return {

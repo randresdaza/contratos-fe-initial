@@ -4,32 +4,36 @@
       <title>Iniciar Sesion</title>
       <h1>Gestión de Contrataciones</h1>
       <div class="greetings">
-        <label v-if="is_auth">Usuario: {{ username }}</label>
+        <label v-if="is_auth">Usuario: {{ usuario.name }}</label>
+        <label v-if="is_auth">{{ rol }}</label>
       </div>
       <nav class="navbar">
         <button v-if="is_auth" v-on:click="loadHome" class="btn btn-primary">
           Inicio
         </button>
-        <button v-if="is_auth" v-on:click="loadUsers" class="btn btn-primary">
+        <button v-if="is_auth && rol=='Administrador'" v-on:click="loadUsers" class="btn btn-primary">
           Usuarios
         </button>
-        <button v-if="is_auth" v-on:click="loadRoles" class="btn btn-primary">
+        <button v-if="is_auth && rol=='Administrador'" v-on:click="loadRoles" class="btn btn-primary">
           Roles
         </button>
-        <button v-if="is_auth" v-on:click="loadContratos" class="btn btn-primary">
+        <button v-if="is_auth && rol=='Administrador' || rol=='Digitador'" v-on:click="loadContratos" class="btn btn-primary">
           Contratos
         </button>
-        <button v-if="is_auth" v-on:click="loadDependencias" class="btn btn-primary">
+        <button v-if="is_auth && rol=='Administrador'" v-on:click="loadDependencias" class="btn btn-primary">
           Dependencias
         </button>
-        <button v-if="is_auth" v-on:click="loadSeries" class="btn btn-primary">
+        <button v-if="is_auth && rol=='Administrador'" v-on:click="loadSeries" class="btn btn-primary">
           Series
         </button>
-        <button v-if="is_auth" v-on:click="loadSubSeries" class="btn btn-primary">
+        <button v-if="is_auth && rol=='Administrador'" v-on:click="loadSubSeries" class="btn btn-primary">
           Subseries
         </button>
-        <button v-if="is_auth" v-on:click="loadUsers" class="btn btn-primary">
-          Históricos
+        <button v-if="is_auth && rol=='Administrador' || rol=='Supervisor'" v-on:click="loadUsers" class="btn btn-primary">
+          Auditoría
+        </button>
+        <button v-if="is_auth && rol=='Administrador' || rol=='Supervisor'" v-on:click="loadUsers" class="btn btn-primary">
+          Reportes
         </button>
         <button v-if="is_auth" v-on:click="logOut" class="btn btn-danger">
           Cerrar Sesión
@@ -58,7 +62,9 @@ export default {
   data: function () {
     return {
       is_auth: false,
-      username: localStorage.getItem("username")
+      username: localStorage.getItem("username"),
+      usuario: '',
+      rol:'',
     }
   },
   methods: {
@@ -76,7 +82,8 @@ export default {
       this.$router.push({ name: 'signUp' })
     },
     loadHome: function () {
-      this.$router.push({ name: 'home' })
+      location.reload();
+      this.$router.push({ name: 'home' })    
     },
     loadUsers: function () {
       this.$router.push({ name: 'usuarios' })
@@ -97,11 +104,13 @@ export default {
       this.$router.push({ name: 'subSeries' })
     },
     logOut: function () {
+      location.reload();
       localStorage.clear();
       alert("Sesión cerrada");
       this.verifyAuth();
     },
     completedLogIn: function (data) {
+      location.reload();
       localStorage.setItem("token_access", data.token_access);
       localStorage.setItem("token_refresh", data.token_refresh);
       localStorage.setItem("username", data.username);
@@ -113,11 +122,51 @@ export default {
       alert("El registro fue exitoso");
       this.completedLogIn(data)
     },
+    getData: async function () {
+      if (
+        localStorage.getItem('token_access') === null ||
+        localStorage.getItem('token_refresh') === null
+      ) {
+        this.$emit('logOut');
+        return;
+      }
+      await this.verifyToken();
+      let token = localStorage.getItem('token_access');
+      // Obtener detalles del usuario
+      axios
+        .get(`http://127.0.0.1:8000/users/username/${this.username}/`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        .then((result) => {
+          this.usuario = result.data;
+          this.rol = this.usuario.rol.nombre
+        })
+        .catch((error) => {
+          console.error('Error al obtener los detalles del usuario:', error);
+        });
+    },
+    verifyToken: function () {
+      return axios
+        .post(
+          'http://127.0.0.1:8000/refresh/',
+          { refresh: localStorage.getItem('token_refresh') },
+          { headers: { 'Content-Type': 'application/json' } }
+        )
+        .then((result) => {
+          localStorage.setItem('token_access', result.data.access);
+        })
+        .catch(() => {
+          this.$emit('logOut');
+        });
+    },
   },
   created: function () {
     this.verifyAuth()
-  }
-}
+  },
+  mounted() {
+    this.getData();
+  },
+};
 </script>
 
 <style>
@@ -133,7 +182,7 @@ body {
   flex-direction: column;
   display: flex;
   justify-content: center;
-  font-size: 20px;
+  font-size: 15px;
 
 }
 

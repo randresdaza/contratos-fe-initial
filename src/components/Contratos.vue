@@ -43,19 +43,19 @@
                 <span v-else>Total registros: {{ contratosFiltrados.length }}</span>
             </div>
         </div>
-        <ver-contrato-modal v-if="mostrarRegistro" :show-modal="mostrarRegistro" @registrar-contrato="registrarContrato"
-            @cancelar-registro="cancelarRegistro"></ver-contrato-modal>
+        <registrar-contrato v-if="mostrarRegistro" :show-modal="mostrarRegistro" @registrar-contrato="registrarContrato"
+            @cancelar-registro="cancelarRegistro"></registrar-contrato>
     </div>
 </template>
-  
+
 <script>
 import axios from 'axios';
-import VerContratoModal from './VerContratoModal.vue';
+import RegistrarContrato from './RegistrarContrato.vue';
 
 export default {
     name: 'Contratos',
     components: {
-        VerContratoModal,
+        RegistrarContrato,
     },
     data() {
         return {

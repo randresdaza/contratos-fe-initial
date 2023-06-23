@@ -49,14 +49,14 @@
 <script>
 import axios from 'axios';
 import jwt_decode from 'jwt-decode';
-import EditarUsuarioModal from './EditarUsuarioModal.vue';
-import RegistrarUsuarioModal from './RegistrarUsuarioModal.vue';
+import EditarUsuario from './EditarUsuario.vue';
+import RegistrarUsuario from './RegistrarUsuario.vue';
 
 export default {
     name: 'SubSeries',
     components: {
-        EditarUsuarioModal,
-        RegistrarUsuarioModal,
+        EditarUsuario,
+        RegistrarUsuario,
     },
     data() {
         return {

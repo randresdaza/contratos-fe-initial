@@ -1,7 +1,7 @@
 <template>
     <div class="modal" v-if="showModal">
         <div class="modal-content">
-            <h2>Editar Rol</h2>
+            <h2>Editar</h2>
             <form @submit.prevent="guardarUsuario">
                 <div class="form-group">
                     <label for="name">Nombre:</label>

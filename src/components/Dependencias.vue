@@ -39,24 +39,24 @@
                 <span v-else>Total registros: {{ usuariosFiltrados.length }}</span>
             </div>
         </div>
-        <editar-usuario-modal :usuario-seleccionado="usuarioSeleccionado" :show-modal="showModal"
-            @guardar-usuario="guardarUsuario" @cancelar-edicion="cancelarEdicion"></editar-usuario-modal>
-        <registrar-usuario-modal v-if="mostrarRegistro" :show-modal="mostrarRegistro" @registrar-usuario="registrarUsuario"
-            @cancelar-registro="cancelarRegistro"></registrar-usuario-modal>
+        <editar-usuario :usuario-seleccionado="usuarioSeleccionado" :show-modal="showModal"
+            @guardar-usuario="guardarUsuario" @cancelar-edicion="cancelarEdicion"></editar-usuario>
+        <registrar-usuario v-if="mostrarRegistro" :show-modal="mostrarRegistro" @registrar-usuario="registrarUsuario"
+            @cancelar-registro="cancelarRegistro"></registrar-usuario>
     </div>
 </template>
 
 <script>
 import axios from 'axios';
 import jwt_decode from 'jwt-decode';
-import EditarUsuarioModal from './EditarUsuarioModal.vue';
-import RegistrarUsuarioModal from './RegistrarUsuarioModal.vue';
+import EditarUsuario from './EditarUsuario.vue';
+import RegistrarUsuario from './RegistrarUsuario.vue';
 
 export default {
     name: 'Usuarios',
     components: {
-        EditarUsuarioModal,
-        RegistrarUsuarioModal,
+        EditarUsuario,
+        RegistrarUsuario,
     },
     data() {
         return {
